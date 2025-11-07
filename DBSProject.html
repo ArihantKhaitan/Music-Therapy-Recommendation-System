@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Therapy Recommendation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+            color: #333;
+        }
+        header {
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        header h1::before {
+            content: '\f001';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 10px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 10px 0;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            color: #2575fc;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        button {
+            background: #2575fc;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #6a11cb;
+        }
+        .mood-grid, .song-grid, .admin-grid, .therapy-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .mood-grid {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+        .song-grid {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+        .admin-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        .therapy-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+        .mood-item, .song-item, .admin-item, .therapy-item {
+            background: #f1f3f8;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .mood-item:hover, .therapy-item:hover {
+            background: #d0e1ff;
+            transform: translateY(-3px);
+            cursor: pointer;
+        }
+        .song-item {
+            background: #fff8e1;
+            position: relative;
+            padding-bottom: 50px;
+        }
+        .song-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .song-controls button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+        .admin-item {
+            background: #e0f7fa;
+        }
+        .therapy-item {
+            background: #f0e6ff;
+        }
+        .hidden {
+            display: none;
+        }
+        a {
+            color: #2575fc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        .language-selector select {
+            width: auto;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .language-selector select option {
+            background: #2575fc;
+            color: white;
+        }
+        .progress-container {
+            margin: 20px 0;
+            background: #eee;
+            border-radius: 5px;
+            height: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            border-radius: 5px;
+            width: 0;
+            transition: width 0.3s;
+        }
+        .timer {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .therapy-session-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Dark Mode Styles */
+        .dark-mode {
+            background: #121212;
+            color: #e0e0e0;
+        }
+        .dark-mode header {
+            background: linear-gradient(90deg, #000428, #004e92);
+        }
+        .dark-mode nav ul li a {
+            color: #e0e0e0;
+        }
+        .dark-mode .container {
+            background: #1e1e1e;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+        }
+        .dark-mode .mood-item, .dark-mode .song-item, .dark-mode .admin-item, .dark-mode .therapy-item {
+            background: #2c2c2c;
+            color: #e0e0e0;
+        }
+        .dark-mode .mood-item:hover, .dark-mode .therapy-item:hover {
+            background: #3d3d3d;
+        }
+        .dark-mode .song-item {
+            background: #3b3b2e;
+        }
+        .dark-mode .admin-item {
+            background: #2a3b3f;
+        }
+        .dark-mode .therapy-item {
+            background: #2a233b;
+        }
+        .dark-mode input, .dark-mode select, .dark-mode textarea {
+            background: #333;
+            color: #eee;
+            border: 1px solid #555;
+        }
+        .dark-mode a {
+            color: #82b1ff;
+        }
+        .dark-mode button {
+            background: #004e92;
+        }
+        .dark-mode button:hover {
+            background: #000428;
+        }
+        .dark-mode .progress-container {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="language-selector">
+        <select id="language-select" onchange="changeLanguage()">
+            <option value="english">English</option>
+            <option value="hindi">Hindi</option>
+            <option value="kannada">Kannada</option>
+            <option value="malayalam">Malayalam</option>
+        </select>
+    </div>
+    <h1 id="header-title">Music Therapy Recommendation System</h1>
+    <nav>
+        <ul>
+            <li><a href="#" onclick="showPage('login')" id="nav-login">Login</a></li>
+            <li><a href="#" onclick="showPage('signup')" id="nav-signup">Sign Up</a></li>
+            <li><a href="#" onclick="showPage('mood')" id="nav-mood">Mood</a></li>
+            <li><a href="#" onclick="showPage('songs')" id="nav-songs">Songs</a></li>
+            <li><a href="#" onclick="showPage('therapy')" id="nav-therapy">Therapy</a></li>
+            <li><a href="#" onclick="showPage('feedback')" id="nav-feedback">Feedback</a></li>
+            <li><a href="#" onclick="showPage('admin')" id="nav-admin">Admin</a></li>
+        </ul>
+        <button onclick="toggleDarkMode()" style="position:absolute; top:20px; right:20px; padding:8px 12px; border:none; border-radius:6px; cursor:pointer; background:#fff; color:#333; font-weight:bold;">
+            🌙 <span id="dark-mode-text">Toggle Dark Mode</span>
+        </button>
+    </nav>
+</header>
+
+<div class="container">
+
+    <!-- Login Page -->
+    <div id="login" class="page">
+        <h2 id="login-heading">Login</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="login-email" id="login-email-label">Email:</label>
+                <input type="email" id="login-email" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password" id="login-password-label">Password:</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" id="login-button">Login</button>
+        </form>
+        <p id="login-signup-prompt">Don't have an account? <a href="#" onclick="showPage('signup')">Sign Up</a></p>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signup" class="page hidden">
+        <h2 id="signup-heading">Sign Up</h2>
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="signup-name" id="signup-name-label">Name:</label>
+                <input type="text" id="signup-name" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-email" id="signup-email-label">Email:</label>
+                <input type="email" id="signup-email" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password" id="signup-password-label">Password:</label>
+                <input type="password" id="signup-password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password" id="confirm-password-label">Confirm Password:</label>
+                <input type="password" id="confirm-password" required>
+            </div>
+            <div class="form-group">
+                <label for="language-preference" id="language-preference-label">Preferred Language:</label>
+                <select id="language-preference">
+                    <option value="english">English</option>
+                    <option value="hindi">Hindi</option>
+                    <option value="kannada">Kannada</option>
+                    <option value="malayalam">Malayalam</option>
+                </select>
+            </div>
+            <button type="submit" id="signup-button">Sign Up</button>
+        </form>
+    </div>
+
+    <!-- Mood Selection Page -->
+    <div id="mood" class="page hidden">
+        <h2 id="mood-heading">Select Your Mood</h2>
+        <div class="mood-grid">
+            <div class="mood-item" onclick="selectMood('Happy')">😊 <span id="mood-happy">Happy</span></div>
+            <div class="mood-item" onclick="selectMood('Sad')">😢 <span id="mood-sad">Sad</span></div>
+            <div class="mood-item" onclick="selectMood('Angry')">😡 <span id="mood-angry">Angry</span></div>
+            <div class="mood-item" onclick="selectMood('Relaxed')">😌 <span id="mood-relaxed">Relaxed</span></div>
+            <div class="mood-item" onclick="selectMood('Energetic')">⚡ <span id="mood-energetic">Energetic</span></div>
+            <div class="mood-item" onclick="selectMood('Anxious')">😰 <span id="mood-anxious">Anxious</span></div>
+            <div class="mood-item" onclick="selectMood('Peaceful')">🕊️ <span id="mood-peaceful">Peaceful</span></div>
+        </div>
+        <br>
+        <button id="get-recommendations" onclick="getRecommendations()">Get Recommendations</button>
+    </div>
+
+    <!-- Songs Suggestions Page -->
+    <div id="songs" class="page hidden">
+        <h2 id="songs-heading">Song Suggestions</h2>
+        <div class="form-group">
+            <label for="language-filter" id="language-filter-label">Filter by Language:</label>
+            <select id="language-filter" onchange="filterSongs()">
+                <option value="all">All Languages</option>
+                <option value="english">English</option>
+                <option value="hindi">Hindi</option>
+                <option value="kannada">Kannada</option>
+                <option value="malayalam">Malayalam</option>
+            </select>
+        </div>
+        <div class="song-grid" id="song-list">
+            <!-- Songs will be dynamically added here -->
+        </div>
+        <button id="provide-feedback" onclick="showPage('feedback')">Provide Feedback</button>
+    </div>
+
+    <!-- Music Therapy Page -->
+    <div id="therapy" class="page hidden">
+        <h2 id="therapy-heading">Music Therapy Sessions</h2>
+        <p id="therapy-description">Choose a therapy session based on your needs:</p>
+        
+        <div class="therapy-grid">
+            <div class="therapy-item" onclick="startTherapySession('stress')">
+                <h3>🧘 <span id="therapy-stress">Stress Relief</span></h3>
+                <p id="therapy-stress-desc">15-minute session to reduce stress and anxiety</p>
+            </div>
+            <div class="therapy-item" onclick="startTherapySession('focus')">
+                <h3>🎯 <span id="therapy-focus">Focus Enhancement</span></h3>
+                <p id="therapy-focus-desc">20-minute session to improve concentration</p>
+            </div>
+            <div class="therapy-item" onclick="startTherapySession('sleep')">
+                <h3>😴 <span id="therapy-sleep">Sleep Aid</span></h3>
+                <p id="therapy-sleep-desc">30-minute session to help you fall asleep</p>
+            </div>
+            <div class="therapy-item" onclick="startTherapySession('meditation')">
+                <h3>🧠 <span id="therapy-meditation">Meditation</span></h3>
+                <p id="therapy-meditation-desc">10-minute guided meditation with music</p>
+            </div>
+        </div>
+        
+        <div id="therapy-session" class="hidden">
+            <h3 id="therapy-session-title">Session Title</h3>
+            <div class="timer" id="therapy-timer">00:00</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="therapy-progress"></div>
+            </div>
+            <div class="therapy-session-controls">
+                <button id="therapy-pause">Pause</button>
+                <button id="therapy-stop">End Session</button>
+            </div>
+            <div class="form-group">
+                <label for="volume-control" id="volume-label">Volume:</label>
+                <input type="range" id="volume-control" min="0" max="100" value="70">
+            </div>
+            <div class="therapy-notes">
+                <p id="therapy-current-effect">Current effect: Relaxing your mind</p>
+                <p id="therapy-instructions">Take deep breaths and focus on the music</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Page -->
+    <div id="feedback" class="page hidden">
+        <h2 id="feedback-heading">Feedback</h2>
+        <form id="feedback-form">
+            <div class="form-group">
+                <label for="song-selection" id="feedback-song-label">Select Song:</label>
+                <select id="song-selection">
+                    <!-- Songs will be added dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="rating" id="feedback-rating-label">Rating:</label>
+                <select id="rating">
+                    <option value="1">1 - Poor</option>
+                    <option value="2">2 - Fair</option>
+                    <option value="3">3 - Good</option>
+                    <option value="4">4 - Very Good</option>
+                    <option value="5">5 - Excellent</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="effectiveness" id="feedback-effectiveness-label">Therapy Effectiveness:</label>
+                <select id="effectiveness">
+                    <option value="1">1 - Not Effective</option>
+                    <option value="2">2 - Slightly Effective</option>
+                    <option value="3">3 - Moderately Effective</option>
+                    <option value="4">4 - Very Effective</option>
+                    <option value="5">5 - Extremely Effective</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="comments" id="feedback-comments-label">Comments:</label>
+                <textarea id="comments"></textarea>
+            </div>
+            <button type="submit" id="feedback-submit">Submit Feedback</button>
+        </form>
+    </div>
+
+    <!-- Admin Controls Page -->
+    <div id="admin" class="page hidden">
+        <h2 id="admin-heading">Admin Controls</h2>
+        <div class="admin-grid">
+            <div class="admin-item">
+                <h3 id="admin-users">Total Users:</h3>
+                <p id="total-users">0</p>
+            </div>
+            <div class="admin-item">
+                <h3 id="admin-songs">Total Songs:</h3>
+                <p id="total-songs">0</p>
+            </div>
+            <div class="admin-item">
+                <h3 id="admin-feedback">Feedback Received:</h3>
+                <p id="total-feedback">0</p>
+            </div>
+            <div class="admin-item">
+                <h3 id="admin-therapy">Therapy Sessions:</h3>
+                <p id="total-therapy">0</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="admin-language-stats" id="admin-language-label">Usage by Language:</label>
+            <div id="language-usage-stats">
+                <p>English: 65%</p>
+                <p>Hindi: 20%</p>
+                <p>Kannada: 10%</p>
+                <p>Malayalam: 5%</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Current app settings
+    const appSettings = {
+        currentLanguage: 'english',
+        currentMood: null,
+        isLoggedIn: false,
+        userId: null,
+        darkMode: false,
+        currentTherapySession: null,
+        therapyTimer: null,
+        therapyDuration: 0,
+        therapyElapsed: 0
+    };
+
+    // Language translations
+    const translations = {
+        english: {
+            header: "Music Therapy Recommendation System",
+            navLogin: "Login",
+            navSignup: "Sign Up",
+            navMood: "Mood",
+            navSongs: "Songs",
+            navTherapy: "Therapy",
+            navFeedback: "Feedback",
+            navAdmin: "Admin",
+            darkModeToggle: "Toggle Dark Mode",
+            // Login page
+            loginHeading: "Login",
+            loginEmail: "Email:",
+            loginPassword: "Password:",
+            loginButton: "Login",
+            loginSignupPrompt: "Don't have an account? Sign Up",
+            // Signup page
+            signupHeading: "Sign Up",
+            signupName: "Name:",
+            signupEmail: "Email:",
+            signupPassword: "Password:",
+            signupConfirmPassword: "Confirm Password:",
+            signupLanguage: "Preferred Language:",
+            signupButton: "Sign Up",
+            // Mood page
+            moodHeading: "Select Your Mood",
+            moodHappy: "Happy",
+            moodSad: "Sad",
+            moodAngry: "Angry",
+            moodRelaxed: "Relaxed",
+            moodEnergetic: "Energetic",
+            moodAnxious: "Anxious",
+            moodPeaceful: "Peaceful",
+            moodButton: "Get Recommendations",
+            // Songs page
+            songsHeading: "Song Suggestions",
+            languageFilter: "Filter by Language:",
+            provideFeedback: "Provide Feedback",
+            // Therapy page
+            therapyHeading: "Music Therapy Sessions",
+            therapyDescription: "Choose a therapy session based on your needs:",
+            therapyStress: "Stress Relief",
+            therapyStressDesc: "15-minute session to reduce stress and anxiety",
+            therapyFocus: "Focus Enhancement",
+            therapyFocusDesc: "20-minute session to improve concentration",
+            therapySleep: "Sleep Aid",
+            therapySleepDesc: "30-minute session to help you fall asleep",
+            therapyMeditation: "Meditation",
+            therapyMeditationDesc: "10-minute guided meditation with music",
+            volumeLabel: "Volume:",
+            // Feedback page
+            feedbackHeading: "Feedback",
+            feedbackSong: "Select Song:",
+            feedbackRating: "Rating:",
+            feedbackEffectiveness: "Therapy Effectiveness:",
+            feedbackComments: "Comments:",
+            feedbackSubmit: "Submit Feedback",
+            // Admin page
+            adminHeading: "Admin Controls",
+            adminUsers: "Total Users:",
+            adminSongs: "Total Songs:",
+            adminFeedback: "Feedback Received:",
+            adminTherapy: "Therapy Sessions:",
+            adminLanguage: "Usage by Language:"
+        },
+        hindi: {
+            header: "संगीत थेरेपी अनुशंसा प्रणाली",
+            navLogin: "लॉगिन",
+            navSignup: "साइन अप",
+            navMood: "मूड",
+            navSongs: "गाने",
+            navTherapy: "थेरेपी",
+            navFeedback: "प्रतिक्रिया",
+            navAdmin: "एडमिन",
+            darkModeToggle: "डार्क मोड टॉगल करें",
+            // Login page
+            loginHeading: "लॉगिन",
+            loginEmail: "ईमेल:",
+            loginPassword: "पासवर्ड:",
+            loginButton: "लॉगिन",
+            loginSignupPrompt: "खाता नहीं है? साइन अप करें",
+            // Mood page
+            moodHeading: "अपना मूड चुनें",
+            moodHappy: "खुश",
+            moodSad: "उदास",
+            moodAngry: "क्रोधित",
+            moodRelaxed: "आराम",
+            moodEnergetic: "ऊर्जावान",
+            moodAnxious: "चिंतित",
+            moodPeaceful: "शांत",
+            moodButton: "अनुशंसाएँ प्राप्त करें",
+            // Additional translations would be added here
+        },
+        kannada: {
+            header: "ಸಂಗೀತ ಚಿಕಿತ್ಸೆ ಶಿಫಾರಸು ವ್ಯವಸ್ಥೆ",
+            navLogin: "ಲಾಗಿನ್",
+            navSignup: "ಸೈನ್ ಅಪ್",
+            navMood: "ಮೂಡ್",
+            navSongs: "ಹಾಡುಗಳು",
+            navTherapy: "ಚಿಕಿತ್ಸೆ",
+            navFeedback: "ಪ್ರತಿಕ್ರಿಯೆ",
+            navAdmin: "ನಿರ್ವಾಹಕ",
+            darkModeToggle: "ಡಾರ್ಕ್ ಮೋಡ್ ಟಾಗಲ್",
+            // Additional translations would be added here
+        },
+        malayalam: {
+            header: "സംഗീത ചികിത്സ ശുപാർശ സംവിധാനം",
+            navLogin: "ലോഗിൻ",
+            navSignup: "സൈൻ അപ്പ്",
+            navMood: "മൂഡ്",
+            navSongs: "ഗാനങ്ങൾ",
+            navTherapy: "തെറാപ്പി",
+            navFeedback: "പ്രതികരണം",
+            navAdmin: "അഡ്മിൻ",
+            darkModeToggle: "ഡാർക്ക് മോഡ് ടോഗിൾ",
+            // Additional translations would be added here
+        }
+    };
+
+    // Sample song data with language information
+    const songs = {
+        "Happy": [
+            { id: 4, title: "Chill Vibes", artist: "Lo-Fi Beats", language: "english", genre: "Lofi" },
+            { id: 5, title: "Good Day", artist: "Lo-Fi Beats", language: "english", genre: "Pop" },
+            { id: 6, title: "Pocketful of Sunshine", artist: "Taylor Swift", language: "english", genre: "Pop" },
+            { id: 101, title: "Khushi", artist: "Arijit Singh", language: "hindi", genre: "Bollywood" },
+            { id: 201, title: "Santhoshada Gana", artist: "Raghu Dixit", language: "kannada", genre: "Folk" },
+            { id: 301, title: "Anandame", artist: "Vidyasagar", language: "malayalam", genre: "Soundtrack" }
+        ],
+        "Sad": [
+            { id: 10, title: "Evening Lofi", artist: "LoFi Chillhop", language: "english", genre: "Lofi" },
+            { id: 11, title: "River Flows In You", artist: "Yiruma", language: "english", genre: "Classical" },
+            { id: 12, title: "Let Her Go", artist: "Taylor Swift", language: "english", genre: "Pop" },
+            { id: 102, title: "Channa Mereya", artist: "Arijit Singh", language: "hindi", genre: "Bollywood" },
+            { id: 202, title: "Ninna Danigagi", artist: "Sonu Nigam", language: "kannada", genre: "Soundtrack" },
+            { id: 302, title: "Akale", artist: "K.S. Chithra", language: "malayalam", genre: "Classical" }
+        ],
+        "Relaxed": [
+            { id: 1, title: "Nuvole Bianche", artist: "Ludovico Einaudi", language: "english", genre: "Classical" },
+            { id: 2, title: "Weightless", artist: "Hans Zimmer", language: "english", genre: "Ambient" },
+            { id: 3, title: "Nightfall", artist: "LoFi Chillhop", language: "english", genre: "Lofi" },
+            { id: 103, title: "Tu Hai", artist: "A.R. Rahman", language: "hindi", genre: "Classical" },
+            { id: 203, title: "Paravashanadenu", artist: "Rajesh Krishnan", language: "kannada", genre: "Classical" },
+            { id: 303, title: "Thaazhvaram", artist: "Vidyasagar", language: "malayalam", genre: "Ambient" }
+        ],
+        "Energetic": [
+            { id: 7, title: "Shake It Off", artist: "Taylor Swift", language: "english", genre: "Pop" },
+            { id: 8, title: "Stronger", artist: "Taylor Swift", language: "english", genre: "Pop" },
+            { id: 9, title: "The Nights", artist: "Taylor Swift", language: "english", genre: "Electronic" },
+            { id: 104, title: "Badtameez Dil", artist: "Benny Dayal", language: "hindi", genre: "Bollywood" },
+            { id: 204, title: "Geleya Geleya", artist: "Chandan Shetty", language: "kannada", genre: "Dance" },
+            { id: 304, title: "Jimikki Kammal", artist: "Vidyadharan", language: "malayalam", genre: "Folk" }
+        ],
+        "Angry": [
+            { id: 16, title: "Believer", artist: "Imagine Dragons", language: "english", genre: "Rock" },
+            { id: 17, title: "Smells Like Teen Spirit", artist: "Nirvana", language: "english", genre: "Rock" },
+            { id: 18, title: "Numb", artist: "Imagine Dragons", language: "english", genre: "Rock" },
+            { id: 105, title: "Bhaag DK Bose", artist: "Ram Sampath", language: "hindi", genre: "Rock" },
+            { id: 205, title: "Huchcha", artist: "Sadhu Kokila", language: "kannada", genre: "Rock" },
+            { id: 305, title: "Kandittum Kandittum", artist: "Avial", language: "malayalam", genre: "Rock" }
+        ],
+        "Anxious": [
+            { id: 13, title: "Breathe", artist: "Sleeping At Last", language: "english", genre: "Ambient" },
+            { id: 14, title: "Weightless", artist: "Marconi Union", language: "english", genre: "Ambient" },
+            { id: 15, title: "Saturn", artist: "Sleeping At Last", language: "english", genre: "Ambient" },
+            { id: 106, title: "Kun Faya Kun", artist: "A.R. Rahman", language: "hindi", genre: "Sufi" },
+            { id: 206, title: "Shanti Nilaya", artist: "Raghu Dixit", language: "kannada", genre: "Folk" },
+            { id: 306, title: "Akashamayavale", artist: "K.J. Yesudas", language: "malayalam", genre: "Classical" }
+        ],
+        "Peaceful": [
+            { id: 19, title: "Breathe Me", artist: "Sia", language: "english", genre: "Chill" },
+            { id: 20, title: "Weightless", artist: "Taylor Swift", language: "english", genre: "Ambient" },
+            { id: 21, title: "Mellomaniac", artist: "DJ Shah", language: "english", genre: "Chill" },
+            { id: 107, title: "Main Rahoon Ya Na Rahoon", artist: "Armaan Malik", language: "hindi", genre: "Ballad" },
+            { id: 207, title: "Anisutide Yaako Indu", artist: "Sonu Nigam", language: "kannada", genre: "Classical" },
+            { id: 307, title: "Neeyum Njanum", artist: "K.S. Harisankar", language: "malayalam", genre: "Folk" }
+        ]
+    };
+
+    // Sample therapy session data
+    const therapySessions = {
+        "stress": {
+            title: "Stress Relief Session",
+            duration: 15 * 60, // 15 minutes in seconds
+            effects: [
+                "Reducing cortisol levels",
+                "Relaxing your mind",
+                "Releasing tension in muscles",
+                "Lowering heart rate",
+                "Calming your nervous system"
+            ],
+            instructions: [
+                "Find a comfortable position and close your eyes",
+                "Take deep breaths and focus on the music",
+                "Visualize a peaceful place",
+                "Let go of any thoughts that arise",
+                "Feel your body becoming lighter"
+            ]
+        },
+        "focus": {
+            title: "Focus Enhancement Session",
+            duration: 20 * 60, // 20 minutes in seconds
+            effects: [
+                "Increasing mental clarity",
+                "Enhancing alpha brain waves",
+                "Improving concentration",
+                "Reducing distractions",
+                "Creating optimal learning state"
+            ],
+            instructions: [
+                "Sit in an upright position",
+                "Keep your eyes slightly open or closed",
+                "Focus on your current task",
+                "Let the music become your background",
+                "Maintain deep, steady breathing"
+            ]
+        },
+        "sleep": {
+            title: "Sleep Aid Session",
+            duration: 30 * 60, // 30 minutes in seconds
+            effects: [
+                "Inducing delta brain waves",
+                "Preparing your body for sleep",
+                "Reducing sleep latency",
+                "Quieting mental chatter",
+                "Creating a sleep-friendly environment"
+            ],
+            instructions: [
+                "Lie down in a comfortable position",
+                "Close your eyes and relax your body",
+                "Focus on your breathing",
+                "Allow yourself to drift with the music",
+                "Don't try to force sleep, just allow it to come"
+            ]
+        },
+        "meditation": {
+            title: "Meditation Session",
+            duration: 10 * 60, // 10 minutes in seconds
+            effects: [
+                "Centering your awareness",
+                "Achieving mind-body harmony",
+                "Developing mindfulness",
+                "Increasing present moment awareness",
+                "Cultivating inner peace"
+            ],
+            instructions: [
+                "Sit comfortably with a straight spine",
+                "Rest your hands on your knees",
+                "Close your eyes and focus on your breath",
+                "Observe thoughts without judgment",
+                "Return to your breath whenever your mind wanders"
+            ]
+        }
+    };
+
+    // DOM Content loaded event
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the application
+        init();
+    });
+
+    // Initialize application
+    function init() {
+        // Show login page by default
+        showPage('login');
+        
+        // Apply language
+        changeLanguage(appSettings.currentLanguage);
+        
+        // Setup event listeners
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        document.getElementById('signup-form').addEventListener('submit', handleSignup);
+        document.getElementById('feedback-form').addEventListener('submit', handleFeedback);
+        
+        // Setup therapy session controls
+        document.getElementById('therapy-pause').addEventListener('click', toggleTherapySession);
+        document.getElementById('therapy-stop').addEventListener('click', endTherapySession);
+        
+        // Load dummy data for admin panel (in a real app this would come from a database)
+        document.getElementById('total-users').textContent = "152";
+        document.getElementById('total-songs').textContent = "457";
+        document.getElementById('total-feedback').textContent = "89";
+        document.getElementById('total-therapy').textContent = "263";
+        
+        // Populate song selection dropdown for feedback
+        populateSongDropdown();
+    }
+
+    // Show selected page and hide others
+    function showPage(pageId) {
+        // If not logged in, only allow login and signup pages
+        if (!appSettings.isLoggedIn && pageId !== 'login' && pageId !== 'signup') {
+            alert('Please login first.');
+            showPage('login');
+            return;
+        }
+        
+        // Hide all pages
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(page => {
+            page.classList.add('hidden');
+        });
+        
+        // Show selected page
+        document.getElementById(pageId).classList.remove('hidden');
+        
+        // If showing songs page, populate songs
+        if (pageId === 'songs' && appSettings.currentMood) {
+            populateSongs(appSettings.currentMood);
+        }
+    }
+
+    // Handle login form submission
+    function handleLogin(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        // Simple validation
+        if (!email || !password) {
+            alert('Please enter both email and password.');
+            return;
+        }
+        
+        // In a real app, this would make an API call to validate credentials
+        // For demo purposes, we'll just simulate a successful login
+        appSettings.isLoggedIn = true;
+        appSettings.userId = 'user123';
+        
+        // Show mood selection page after login
+        showPage('mood');
+    }
+
+    // Handle signup form submission
+    function handleSignup(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        const language = document.getElementById('language-preference').value;
+        
+        // Simple validation
+        if (!name || !email || !password || !confirmPassword) {
+            alert('Please fill out all fields.');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            alert('Passwords do not match.');
+            return;
+        }
+        
+        // In a real app, this would make an API call to create a new user
+        // For demo purposes, we'll just simulate a successful signup
+        appSettings.isLoggedIn = true;
+        appSettings.userId = 'user123';
+        appSettings.currentLanguage = language;
+        
+        // Apply the selected language
+        changeLanguage(language);
+        
+        // Show mood selection page after signup
+        showPage('mood');
+    }
+
+    // Change application language
+    function changeLanguage(lang) {
+        if (!lang) {
+            lang = document.getElementById('language-select').value;
+        }
+        
+        appSettings.currentLanguage = lang;
+        
+        // Apply translations based on selected language
+        const currentTranslations = translations[lang] || translations.english;
+        
+        // Apply to header
+        document.getElementById('header-title').textContent = currentTranslations.header;
+        
+        // Apply to navigation
+        document.getElementById('nav-login').textContent = currentTranslations.navLogin;
+        document.getElementById('nav-signup').textContent = currentTranslations.navSignup;
+        document.getElementById('nav-mood').textContent = currentTranslations.navMood;
+        document.getElementById('nav-songs').textContent = currentTranslations.navSongs;
+        document.getElementById('nav-therapy').textContent = currentTranslations.navTherapy;
+        document.getElementById('nav-feedback').textContent = currentTranslations.navFeedback;
+        document.getElementById('nav-admin').textContent = currentTranslations.navAdmin;
+        document.getElementById('dark-mode-text').textContent = currentTranslations.darkModeToggle;
+        
+        // Apply to login page
+        document.getElementById('login-heading').textContent = currentTranslations.loginHeading;
+        document.getElementById('login-email-label').textContent = currentTranslations.loginEmail;
+        document.getElementById('login-password-label').textContent = currentTranslations.loginPassword;
+        document.getElementById('login-button').textContent = currentTranslations.loginButton;
+        document.getElementById('login-signup-prompt').innerHTML = `${currentTranslations.loginSignupPrompt.split('Sign Up')[0]} <a href="#" onclick="showPage('signup')">Sign Up</a>`;
+        
+        // Apply to signup page
+        document.getElementById('signup-heading').textContent = currentTranslations.signupHeading;
+        document.getElementById('signup-name-label').textContent = currentTranslations.signupName;
+        document.getElementById('signup-email-label').textContent = currentTranslations.signupEmail;
+        document.getElementById('signup-password-label').textContent = currentTranslations.signupPassword;
+        document.getElementById('confirm-password-label').textContent = currentTranslations.signupConfirmPassword;
+        document.getElementById('language-preference-label').textContent = currentTranslations.signupLanguage;
+        document.getElementById('signup-button').textContent = currentTranslations.signupButton;
+        
+        // Apply to mood page
+        document.getElementById('mood-heading').textContent = currentTranslations.moodHeading;
+        document.getElementById('mood-happy').textContent = currentTranslations.moodHappy;
+        document.getElementById('mood-sad').textContent = currentTranslations.moodSad;
+        document.getElementById('mood-angry').textContent = currentTranslations.moodAngry;
+        document.getElementById('mood-relaxed').textContent = currentTranslations.moodRelaxed;
+        document.getElementById('mood-energetic').textContent = currentTranslations.moodEnergetic;
+        document.getElementById('mood-anxious').textContent = currentTranslations.moodAnxious;
+        document.getElementById('mood-peaceful').textContent = currentTranslations.moodPeaceful;
+        document.getElementById('get-recommendations').textContent = currentTranslations.moodButton;
+        
+        // Apply to songs page
+        if (currentTranslations.songsHeading) {
+            document.getElementById('songs-heading').textContent = currentTranslations.songsHeading;
+            document.getElementById('language-filter-label').textContent = currentTranslations.languageFilter;
+            document.getElementById('provide-feedback').textContent = currentTranslations.provideFeedback;
+        }
+        
+        // Apply to therapy page
+        if (currentTranslations.therapyHeading) {
+            document.getElementById('therapy-heading').textContent = currentTranslations.therapyHeading;
+            document.getElementById('therapy-description').textContent = currentTranslations.therapyDescription;
+            document.getElementById('therapy-stress').textContent = currentTranslations.therapyStress;
+            document.getElementById('therapy-stress-desc').textContent = currentTranslations.therapyStressDesc;
+            document.getElementById('therapy-focus').textContent = currentTranslations.therapyFocus;
+            document.getElementById('therapy-focus-desc').textContent = currentTranslations.therapyFocusDesc;
+            document.getElementById('therapy-sleep').textContent = currentTranslations.therapySleep;
+            document.getElementById('therapy-sleep-desc').textContent = currentTranslations.therapySleepDesc;
+            document.getElementById('therapy-meditation').textContent = currentTranslations.therapyMeditation;
+            document.getElementById('therapy-meditation-desc').textContent = currentTranslations.therapyMeditationDesc;
+            document.getElementById('volume-label').textContent = currentTranslations.volumeLabel;
+        }
+        
+        // Apply to feedback page
+        if (currentTranslations.feedbackHeading) {
+            document.getElementById('feedback-heading').textContent = currentTranslations.feedbackHeading;
+            document.getElementById('feedback-song-label').textContent = currentTranslations.feedbackSong;
+            document.getElementById('feedback-rating-label').textContent = currentTranslations.feedbackRating;
+            document.getElementById('feedback-effectiveness-label').textContent = currentTranslations.feedbackEffectiveness;
+            document.getElementById('feedback-comments-label').textContent = currentTranslations.feedbackComments;
+            document.getElementById('feedback-submit').textContent = currentTranslations.feedbackSubmit;
+        }
+        
+        // Apply to admin page
+        if (currentTranslations.adminHeading) {
+            document.getElementById('admin-heading').textContent = currentTranslations.adminHeading;
+            document.getElementById('admin-users').textContent = currentTranslations.adminUsers;
+            document.getElementById('admin-songs').textContent = currentTranslations.adminSongs;
+            document.getElementById('admin-feedback').textContent = currentTranslations.adminFeedback;
+            document.getElementById('admin-therapy').textContent = currentTranslations.adminTherapy;
+            document.getElementById('admin-language-label').textContent = currentTranslations.adminLanguage;
+        }
+    }
+
+    // Select mood
+    function selectMood(mood) {
+        // Remove selection from all mood items
+        const moodItems = document.querySelectorAll('.mood-item');
+        moodItems.forEach(item => {
+            item.style.border = 'none';
+        });
+        
+        // Highlight selected mood
+        event.currentTarget.style.border = '3px solid #2575fc';
+        
+        // Set current mood
+        appSettings.currentMood = mood;
+    }
+
+    // Get song recommendations based on mood
+    function getRecommendations() {
+        if (!appSettings.currentMood) {
+            alert('Please select a mood first.');
+            return;
+        }
+        
+        // Show songs page with recommendations
+        showPage('songs');
+    }
+
+    // Populate songs based on mood and language filter
+    function populateSongs(mood) {
+        const songList = document.getElementById('song-list');
+        songList.innerHTML = '';
+        
+        const languageFilter = document.getElementById('language-filter').value;
+        
+        // Get songs for the selected mood
+        const moodSongs = songs[mood] || [];
+        
+        // Filter by language if selected
+        const filteredSongs = languageFilter === 'all' 
+            ? moodSongs 
+            : moodSongs.filter(song => song.language === languageFilter);
+        
+        // Add songs to the list
+        filteredSongs.forEach(song => {
+            const songItem = document.createElement('div');
+            songItem.className = 'song-item';
+            songItem.innerHTML = `
+                <h3>${song.title}</h3>
+                <p>Artist: ${song.artist}</p>
+                <p>Genre: ${song.genre}</p>
+                <p>Language: ${song.language}</p>
+                <div class="song-controls">
+                    <button onclick="playSong(${song.id})">Play</button>
+                    <button onclick="addToPlaylist(${song.id})">Add to Playlist</button>
+                </div>
+            `;
+            songList.appendChild(songItem);
+        });
+        
+        // If no songs match the filter
+        if (filteredSongs.length === 0) {
+            songList.innerHTML = '<p>No songs available for the selected mood and language filter.</p>';
+        }
+    }
+
+    // Filter songs by language
+    function filterSongs() {
+        populateSongs(appSettings.currentMood);
+    }
+
+    // Simulate playing a song (would be linked to actual audio in a real app)
+    function playSong(songId) {
+        alert(`Playing song with ID: ${songId}`);
+        // In a real app, this would play the actual audio
+    }
+
+    // Add song to user's playlist
+    function addToPlaylist(songId) {
+        alert(`Added song with ID: ${songId} to your playlist`);
+        // In a real app, this would store the playlist in the database
+    }
+
+    // Populate song dropdown for feedback
+    function populateSongDropdown() {
+        const songSelection = document.getElementById('song-selection');
+        songSelection.innerHTML = '';
+        
+        // Add all songs to the dropdown
+        Object.keys(songs).forEach(mood => {
+            songs[mood].forEach(song => {
+                const option = document.createElement('option');
+                option.value = song.id;
+                option.textContent = `${song.title} - ${song.artist}`;
+                songSelection.appendChild(option);
+            });
+        });
+    }
+
+    // Handle feedback form submission
+    function handleFeedback(e) {
+        e.preventDefault();
+        
+        const songId = document.getElementById('song-selection').value;
+        const rating = document.getElementById('rating').value;
+        const effectiveness = document.getElementById('effectiveness').value;
+        const comments = document.getElementById('comments').value;
+        
+        // In a real app, this would submit the feedback to a database
+        alert('Thank you for your feedback!');
+        
+        // Reset form
+        document.getElementById('feedback-form').reset();
+        
+        // Return to mood selection
+        showPage('mood');
+    }
+
+    // Start therapy session
+    function startTherapySession(sessionType) {
+        const session = therapySessions[sessionType];
+        if (!session) return;
+        
+        // Set current therapy session
+        appSettings.currentTherapySession = sessionType;
+        appSettings.therapyDuration = session.duration;
+        appSettings.therapyElapsed = 0;
+        
+        // Update UI
+        document.getElementById('therapy-session-title').textContent = session.title;
+        document.getElementById('therapy-session').classList.remove('hidden');
+        document.getElementById('therapy-current-effect').textContent = `Current effect: ${session.effects[0]}`;
+        document.getElementById('therapy-instructions').textContent = session.instructions[0];
+        
+        // Start timer
+        startTherapyTimer();
+    }
+
+    // Start therapy timer
+    function startTherapyTimer() {
+        // Clear existing timer if any
+        if (appSettings.therapyTimer) {
+            clearInterval(appSettings.therapyTimer);
+        }
+        
+        updateTherapyTimerDisplay();
+        
+        // Start new timer
+        appSettings.therapyTimer = setInterval(() => {
+            appSettings.therapyElapsed++;
+            
+            // Update progress bar
+            const progress = (appSettings.therapyElapsed / appSettings.therapyDuration) * 100;
+            document.getElementById('therapy-progress').style.width = `${progress}%`;
+            
+            // Update timer display
+            updateTherapyTimerDisplay();
+            
+            // Update effects and instructions periodically
+            updateTherapyContent();
+            
+            // End session when time is up
+            if (appSettings.therapyElapsed >= appSettings.therapyDuration) {
+                endTherapySession();
+            }
+        }, 1000);
+    }
+
+    // Pause/resume therapy session
+    function toggleTherapySession() {
+        const pauseButton = document.getElementById('therapy-pause');
+        
+        if (appSettings.therapyTimer) {
+            // Pause
+            clearInterval(appSettings.therapyTimer);
+            appSettings.therapyTimer = null;
+            pauseButton.textContent = 'Resume';
+        } else {
+            // Resume
+            startTherapyTimer();
+            pauseButton.textContent = 'Pause';
+        }
+    }
+
+    // End therapy session
+    function endTherapySession() {
+        // Clear timer
+        if (appSettings.therapyTimer) {
+            clearInterval(appSettings.therapyTimer);
+            appSettings.therapyTimer = null;
+        }
+        
+        // Hide session UI
+        document.getElementById('therapy-session').classList.add('hidden');
+        
+        // Reset progress
+        document.getElementById('therapy-progress').style.width = '0%';
+        
+        // Show feedback prompt
+        if (confirm('Session completed. Would you like to provide feedback?')) {
+            showPage('feedback');
+        }
+    }
+
+    // Update therapy timer display
+    function updateTherapyTimerDisplay() {
+        const minutes = Math.floor((appSettings.therapyDuration - appSettings.therapyElapsed) / 60);
+        const seconds = (appSettings.therapyDuration - appSettings.therapyElapsed) % 60;
+        
+        document.getElementById('therapy-timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Update therapy content periodically
+    function updateTherapyContent() {
+        const session = therapySessions[appSettings.currentTherapySession];
+        if (!session) return;
+        
+        // Change effect and instruction every 20% of the session
+        const progress = appSettings.therapyElapsed / appSettings.therapyDuration;
+        const stage = Math.floor(progress * 5);
+        
+        if (stage < session.effects.length) {
+            document.getElementById('therapy-current-effect').textContent = `Current effect: ${session.effects[stage]}`;
+        }
+        
+        if (stage < session.instructions.length) {
+            document.getElementById('therapy-instructions').textContent = session.instructions[stage];
+        }
+    }
+
+    // Toggle dark mode
+    function toggleDarkMode() {
+        const body = document.body;
+        body.classList.toggle('dark-mode');
+        
+        // Update app settings
+        appSettings.darkMode = body.classList.contains('dark-mode');
+        
+        // Update button text
+        const darkModeText = document.getElementById('dark-mode-text');
+        darkModeText.textContent = appSettings.darkMode ? 
+            '☀️ Light Mode' : '🌙 Toggle Dark Mode';
+    }
+</script>
+
+</body>
+</html>
